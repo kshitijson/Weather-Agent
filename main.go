@@ -3,16 +3,14 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/kshitijson/weather-agent/tools"
-	"google.golang.org/genai"
+	chat "github.com/kshitijson/weather-agent/handlers"
 )
 
 type toolCall struct {
@@ -47,70 +45,16 @@ func main() {
 
 }
 
-func analyseInput(ctx context.Context, userInput string) (string, error) {
-client, err := genai.NewClient(ctx, &genai.ClientConfig{
-		APIKey: os.Getenv("GEMINI_KEY"),
-		Backend: genai.BackendGeminiAPI,
-	})
-
-	if err != nil {
-		log.Fatal("Error connecting to client");
-	}
-
-	parts := []*genai.Part{
-		{Text: "You are a weather assistant."},
-		{Text: "Available tool:"},
-		{Text: "get_weather(city)"},
-		{Text: "When weather information is required,"},
-		{Text: "respond ONLY in JSON, for example:"},
-		{Text: `{"name":"get_weather","city":"Mumbai"}`},
-		{Text: "Otherwise answer normally with the following:"},
-		{Text: `{"name":"no_tool","city":"Generate your resposne in here"}`},
-		{Text: "User Input:"},
-		{Text: userInput},
-	}
-
-	res, err := client.Models.GenerateContent(ctx, "gemini-2.5-flash", []*genai.Content{{Parts: parts}}, nil);
-
-	return res.Text(), err;
-}
-
-func finalOutput(ctx context.Context, userMsg string, weather tools.WeatherResponse) (string, error) {
-
-	client, err := genai.NewClient(ctx, &genai.ClientConfig{
-		APIKey: os.Getenv("GEMINI_KEY"),
-		Backend: genai.BackendGeminiAPI,
-	})
-
-	if err != nil {
-		log.Fatal("Error connecting to client");
-	}
-
-	parts := []*genai.Part{
-		{Text: "User Input: "},
-		{Text: userMsg},
-		{Text: "Tool Result:"},
-		{Text: fmt.Sprintf("City: %s", weather.Location.Name)},	
-		{Text: fmt.Sprintf("Temperature: %.1f°C", weather.Current.TempC)},
-		{Text: fmt.Sprintf("Condition: %s", weather.Current.Condition.Text)},
-		{Text: fmt.Sprintf("Humidity: %d%%", weather.Current.Humidity)},
-		{Text: "Generate Final Answer"},
-	}
-
-	res, err := client.Models.GenerateContent(ctx, "gemini-2.5-flash", []*genai.Content{{Parts: parts}}, nil);
-
-	return res.Text(), err;
-}
-
 func helper(userInput string) string {
 
 	ctx := context.Background();
 
 	var toolcall toolCall;
 
-	res, err := analyseInput(ctx, userInput);
+	res, err := chat.AnalyseInput(ctx, userInput);
 	if err != nil {
-		log.Fatal("Something wrong with gemini Analyze");
+		log.Printf("AnalyseInput error: %s", err)
+		return err.Error()
 	}
 
 	res = strings.TrimSpace(res)
@@ -133,7 +77,7 @@ func helper(userInput string) string {
 			return err.Error();
 		}
 
-		msg, err = finalOutput(ctx, userInput, result);
+		msg, err = chat.FinalOutput(ctx, userInput, result);
 		if err != nil {
 			log.Fatal("Something wrong with gemini finalOutput");
 		}
