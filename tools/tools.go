@@ -22,9 +22,22 @@ type WeatherResponse struct {
 		} `json:"condition"`
 		Humidity int `json:"humidity"`
 	} `json:"current"`
+
+	Forecast struct {
+		ForecastDay []struct {
+			Date string `json:"date"`
+			Day struct {
+				Temp float64 `json:"maxtemp_c"`
+				Humidity int `json:"avghumidity"`
+				Condition struct {
+					Text string `json:"text"`
+				}
+			} `json:"day"`
+		} `json:"forecastday"`
+	} `json:"forecast"`
 }
 
-func GetWeather(city string) (WeatherResponse, error) {
+func GetWeather(city string, isForecast bool, days int64) (WeatherResponse, error) {
 
 	err := godotenv.Load()
 	if err != nil {
@@ -33,7 +46,13 @@ func GetWeather(city string) (WeatherResponse, error) {
 
 	os.Getenv("WEATHER_KEY")
 
-	url := fmt.Sprintf("%s/%s?key=%s&q=%s", os.Getenv("API_URL"), os.Getenv("CURRENT_METHOD"), os.Getenv("WEATHER_KEY"), city);
+	var url string;
+
+	if isForecast {
+		url = fmt.Sprintf("%s/%s?key=%s&q=%s&days=%d", os.Getenv("API_URL"), os.Getenv("CURRENT_METHOD"), os.Getenv("WEATHER_KEY"), city, days)
+	} else {
+		url = fmt.Sprintf("%s/%s?key=%s&q=%s", os.Getenv("API_URL"), os.Getenv("FORECAST_METHOD"), os.Getenv("WEATHER_KEY"), city);
+	} 
 
 	resp, err := http.Get(url)
 	if err != nil {

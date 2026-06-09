@@ -9,13 +9,15 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"github.com/kshitijson/weather-agent/tools"
 	chat "github.com/kshitijson/weather-agent/handlers"
+	"github.com/kshitijson/weather-agent/tools"
 )
 
 type toolCall struct {
 	Name string `json:"name"`
 	City string `json:"city"`
+	IsForecast bool `json:"is_forecast"`
+	ForecastDays int64 `json:"forecast_days"`
 }
 
 func main() {
@@ -72,12 +74,12 @@ func helper(userInput string) string {
 
 	if toolcall.Name == "get_weather" {
 
-		result, err := tools.GetWeather(toolcall.City)
+		result, err := tools.GetWeather(toolcall.City, toolcall.IsForecast, toolcall.ForecastDays)
 		if err != nil {
 			return err.Error();
 		}
 
-		msg, err = chat.FinalOutput(ctx, userInput, result);
+		msg, err = chat.FinalOutput(ctx, userInput, result, toolcall.ForecastDays);
 		if err != nil {
 			log.Fatal("Something wrong with gemini finalOutput");
 		}
