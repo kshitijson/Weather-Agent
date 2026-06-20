@@ -44,6 +44,8 @@ func GetWeather(city string, isForecast bool, days int64) (WeatherResponse, erro
 		log.Fatal("Error Loading env");
 	}
 
+	fmt.Printf("City: %s", city);
+
 	os.Getenv("WEATHER_KEY")
 
 	var url string;
@@ -65,6 +67,8 @@ func GetWeather(city string, isForecast bool, days int64) (WeatherResponse, erro
 	if err := json.NewDecoder(resp.Body).Decode(&weather); err != nil {
 		return WeatherResponse{}, err;
 	}
+
+	fmt.Println(weather);
 
 	// result := fmt.Sprintf(
 	// 	"City: %s\nTemperature: %.1f°C\nCondition: %s\nHumidity: %d%%",
