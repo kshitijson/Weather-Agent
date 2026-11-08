@@ -11,9 +11,9 @@ import (
 
 func main() {
 
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading env");
+	// .env is optional: locally it's loaded from file, in Docker the vars come from --env-file
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found, using environment variables")
 	}
 
 	r := gin.Default();

@@ -3,11 +3,8 @@ package tools
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
-
-	"github.com/joho/godotenv"
 )
 
 type WeatherResponse struct {
@@ -38,11 +35,6 @@ type WeatherResponse struct {
 }
 
 func GetWeather(city string, isForecast bool, days int64) (WeatherResponse, error) {
-
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error Loading env");
-	}
 
 	fmt.Printf("City: %s", city);
 
