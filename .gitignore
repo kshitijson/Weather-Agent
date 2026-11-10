@@ -28,6 +28,5 @@ go.work
 
 # End of https://www.toptal.com/developers/gitignore/api/go
 
-DEPLOYMENT.md
 start.sh
 end.sh
