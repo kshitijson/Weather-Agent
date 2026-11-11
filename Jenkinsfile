@@ -1,5 +1,5 @@
 pipeline {
-    agent any
+    agent { label 'weather-app' }
 
     environment {
         IMAGE     = "weather-agent"
